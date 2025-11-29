@@ -89,4 +89,135 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Product queries
+export async function getAllProducts() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { products } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+  
+  return db.select().from(products).where(eq(products.isActive, 1));
+}
+
+export async function getProductById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const { products } = await import("../drizzle/schema");
+  const { eq, and } = await import("drizzle-orm");
+  
+  const result = await db.select().from(products)
+    .where(and(eq(products.id, id), eq(products.isActive, 1)))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getProductsByCategory(category: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { products } = await import("../drizzle/schema");
+  const { eq, and } = await import("drizzle-orm");
+  
+  return db.select().from(products)
+    .where(and(eq(products.category, category), eq(products.isActive, 1)));
+}
+
+// Blog queries
+export async function getPublishedBlogPosts() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { blogPosts } = await import("../drizzle/schema");
+  const { eq, desc } = await import("drizzle-orm");
+  
+  return db.select().from(blogPosts)
+    .where(eq(blogPosts.isPublished, 1))
+    .orderBy(desc(blogPosts.publishedAt));
+}
+
+export async function getBlogPostBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const { blogPosts } = await import("../drizzle/schema");
+  const { eq, and } = await import("drizzle-orm");
+  
+  const result = await db.select().from(blogPosts)
+    .where(and(eq(blogPosts.slug, slug), eq(blogPosts.isPublished, 1)))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getBlogPostById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const { blogPosts } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+  
+  const result = await db.select().from(blogPosts)
+    .where(eq(blogPosts.id, id))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// Admin queries
+export async function getAllBlogPosts() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { blogPosts } = await import("../drizzle/schema");
+  const { desc } = await import("drizzle-orm");
+  
+  return db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt));
+}
+
+export async function getAllProductsAdmin() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { products } = await import("../drizzle/schema");
+  const { desc } = await import("drizzle-orm");
+  
+  return db.select().from(products).orderBy(desc(products.createdAt));
+}
+
+// Order queries
+export async function getAllOrders() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { orders } = await import("../drizzle/schema");
+  const { desc } = await import("drizzle-orm");
+  
+  return db.select().from(orders).orderBy(desc(orders.createdAt));
+}
+
+export async function getOrderById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const { orders } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+  
+  const result = await db.select().from(orders)
+    .where(eq(orders.id, id))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getOrderItems(orderId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { orderItems } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+  
+  return db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+}

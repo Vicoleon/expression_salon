@@ -5,16 +5,48 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import Servicios from "./pages/Servicios";
+import Contacto from "./pages/Contacto";
+import Productos from "./pages/Productos";
+import ProductoDetalle from "./pages/ProductoDetalle";
+import Carrito from "./pages/Carrito";
+import { CartProvider } from "./contexts/CartContext";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProductos from "./pages/admin/AdminProductos";
+import AdminBlog from "./pages/admin/AdminBlog";
+import AdminOrdenes from "./pages/admin/AdminOrdenes";
+import Checkout from "./pages/Checkout";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-1">
+        <Switch>
+          <Route path={"/"} component={Home} />
+          <Route path="/servicios" component={Servicios} />
+          <Route path="/productos" component={Productos} />
+          <Route path="/productos/:id" component={ProductoDetalle} />
+          <Route path="/carrito" component={Carrito} />
+          <Route path="/blog" component={Blog} />
+          <Route path="/blog/:slug" component={BlogPost} />
+          <Route path="/contacto" component={Contacto} />
+          <Route path="/checkout" component={Checkout} />
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/productos" component={AdminProductos} />
+          <Route path="/admin/blog" component={AdminBlog} />
+          <Route path="/admin/ordenes" component={AdminOrdenes} />
+          <Route path={"/404"} component={NotFound} />
+          {/* Final fallback route */}
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+      <Footer />
+    </div>
   );
 }
 
@@ -30,10 +62,12 @@ function App() {
         defaultTheme="light"
         // switchable
       >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </CartProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
