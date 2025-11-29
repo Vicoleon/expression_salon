@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -21,7 +21,21 @@ import AdminBlog from "./pages/admin/AdminBlog";
 import AdminOrdenes from "./pages/admin/AdminOrdenes";
 import Checkout from "./pages/Checkout";
 
+import Login from "./pages/Login";
+import { useUser } from "./hooks/use-user"; // Assuming this hook exists or we use trpc directly
+import { Loader2 } from "lucide-react";
+
 function Router() {
+  const { user, isLoading } = useUser();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -36,10 +50,22 @@ function Router() {
           <Route path="/blog/:slug" component={BlogPost} />
           <Route path="/contacto" component={Contacto} />
           <Route path="/checkout" component={Checkout} />
-          <Route path="/admin" component={AdminDashboard} />
-          <Route path="/admin/productos" component={AdminProductos} />
-          <Route path="/admin/blog" component={AdminBlog} />
-          <Route path="/admin/ordenes" component={AdminOrdenes} />
+          <Route path="/login" component={Login} />
+
+          {/* Protected Admin Routes */}
+          <Route path="/admin">
+            {user?.role === "admin" ? <AdminDashboard /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/admin/productos">
+            {user?.role === "admin" ? <AdminProductos /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/admin/blog">
+            {user?.role === "admin" ? <AdminBlog /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/admin/ordenes">
+            {user?.role === "admin" ? <AdminOrdenes /> : <Redirect to="/login" />}
+          </Route>
+
           <Route path={"/404"} component={NotFound} />
           {/* Final fallback route */}
           <Route component={NotFound} />
@@ -60,7 +86,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider
         defaultTheme="light"
-        // switchable
+      // switchable
       >
         <CartProvider>
           <TooltipProvider>

@@ -4,6 +4,8 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 
+import { authLocalRouter } from "./routers/auth-local";
+
 // Admin-only procedure
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "admin") {
@@ -13,8 +15,9 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 });
 
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
+  // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
+  authLocal: authLocalRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
@@ -300,10 +303,10 @@ export const appRouter = router({
         const db = await import("./db").then((m) => m.getDb());
         if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { orders, orderItems } = await import("../drizzle/schema");
-        
+
         // Generate order number
         const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-        
+
         // Create order
         await db.insert(orders).values({
           orderNumber,
@@ -316,19 +319,19 @@ export const appRouter = router({
           paymentMethod: "bank_transfer",
           notes: input.notes,
         });
-        
+
         // Get the created order ID
         const { eq } = await import("drizzle-orm");
         const createdOrder = await db.select().from(orders)
           .where(eq(orders.orderNumber, orderNumber))
           .limit(1);
-        
+
         if (!createdOrder || createdOrder.length === 0) {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create order" });
         }
-        
+
         const orderId = createdOrder[0].id;
-        
+
         // Create order items
         for (const item of input.items) {
           await db.insert(orderItems).values({
@@ -339,7 +342,7 @@ export const appRouter = router({
             price: item.price,
           });
         }
-        
+
         return { success: true, orderNumber, orderId };
       }),
   }),

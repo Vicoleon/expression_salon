@@ -2,11 +2,27 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import crypto from "node:crypto";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+
+// Polyfill crypto.hash for Node 18 compatibility
+if (!crypto.hash) {
+  // @ts-ignore
+  crypto.hash = (algorithm: string, data: crypto.BinaryLike, outputEncoding?: crypto.BinaryToTextEncoding) => {
+    const hash = crypto.createHash(algorithm).update(data);
+    return outputEncoding ? hash.digest(outputEncoding) : hash.digest();
+  };
+}
+
+// Polyfill globalThis.crypto for libraries like 'jose'
+if (!globalThis.crypto) {
+  // @ts-ignore
+  globalThis.crypto = crypto;
+}
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {

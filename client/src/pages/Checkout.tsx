@@ -1,4 +1,5 @@
 import { useCart } from "@/contexts/CartContext";
+import { useUser } from "@/hooks/use-user";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,10 @@ import { toast } from "sonner";
 
 export default function Checkout() {
   const { items, total, clearCart } = useCart();
+  const { user, isLoading } = useUser();
   const [, setLocation] = useLocation();
   const [orderComplete, setOrderComplete] = useState(false);
+  const [isGuestCheckout, setIsGuestCheckout] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [formData, setFormData] = useState({
     customerName: "",
@@ -38,7 +41,7 @@ export default function Checkout() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     createOrderMutation.mutate({
       customerName: formData.customerName,
       customerEmail: formData.customerEmail,
@@ -96,11 +99,21 @@ export default function Checkout() {
               </div>
 
               <div className="text-left space-y-4">
-                <h3 className="font-semibold text-lg">Instrucciones de Pago</h3>
-                <div className="bg-card border border-border p-4 rounded-lg space-y-2">
-                  <p className="text-sm">
-                    Para completar tu orden, realiza una transferencia bancaria a:
+                <div className="bg-green-50 border border-green-200 p-6 rounded-lg text-center">
+                  <p className="text-lg text-green-900 font-medium">
+                    Gracias por confiar en nosotros, su orden esta pendiente de revision.
                   </p>
+                  <p className="text-green-800 mt-2">
+                    Por favor proceda a realizar la transferencia (SINPE) y envie el comprobante a{" "}
+                    <a href="mailto:email@expressionsalon.com" className="font-bold underline">
+                      email@expressionsalon.com
+                    </a>
+                    , recibira un correo con instrucciones una vez que el pago haya sido recibidp
+                  </p>
+                </div>
+
+                <h3 className="font-semibold text-lg mt-6">Detalles de Pago</h3>
+                <div className="bg-card border border-border p-4 rounded-lg space-y-2">
                   <div className="bg-muted p-3 rounded space-y-1 text-sm">
                     <p><strong>Banco:</strong> Banco Nacional de Costa Rica</p>
                     <p><strong>Cuenta:</strong> 100-01-000-123456-7</p>
@@ -109,22 +122,10 @@ export default function Checkout() {
                     <p><strong>Monto:</strong> ₡{total.toLocaleString()}</p>
                   </div>
                   <p className="text-sm text-muted-foreground mt-3">
-                    <strong>Importante:</strong> Incluye el número de orden ({orderNumber}) 
+                    <strong>Importante:</strong> Incluye el número de orden ({orderNumber})
                     en la descripción de la transferencia.
                   </p>
                 </div>
-
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
-                  <p className="text-sm text-amber-900">
-                    Una vez realizada la transferencia, envía el comprobante por WhatsApp 
-                    al +506 1234-5678 o por email a pagos@expressionsalon.com
-                  </p>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  Recibirás un email de confirmación a <strong>{formData.customerEmail}</strong> con 
-                  los detalles de tu orden.
-                </p>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-3">
@@ -139,6 +140,61 @@ export default function Checkout() {
                 </Button>
               </Link>
             </CardFooter>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
+  }
+
+  if (!user && !isGuestCheckout) {
+    return (
+      <div className="min-h-screen py-12">
+        <div className="container max-w-4xl">
+          <Link href="/carrito">
+            <Button variant="ghost" className="mb-8">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Volver al Carrito
+            </Button>
+          </Link>
+
+          <Card className="max-w-md mx-auto">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl">¿Cómo deseas continuar?</CardTitle>
+              <CardDescription>
+                Elige una opción para finalizar tu compra
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Link href="/login">
+                <Button className="w-full" size="lg">
+                  Iniciar Sesión / Registrarse
+                </Button>
+              </Link>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    O
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                size="lg"
+                onClick={() => setIsGuestCheckout(true)}
+              >
+                Comprar como Invitado
+              </Button>
+            </CardContent>
           </Card>
         </div>
       </div>

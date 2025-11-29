@@ -15,6 +15,13 @@
       "when": 1764376071870,
       "tag": "0001_daffy_solo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1764381771089,
+      "tag": "0002_careless_shotgun",
+      "breakpoints": true
     }
   ]
 }
