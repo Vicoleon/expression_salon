@@ -19,17 +19,28 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, ShoppingBag, FileText, ShoppingCart, Scissors } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
+  { icon: ShoppingBag, label: "Productos", path: "/admin/productos" },
+  { icon: FileText, label: "Blog", path: "/admin/blog" },
+  { icon: ShoppingCart, label: "Órdenes", path: "/admin/ordenes" },
+  { icon: Scissors, label: "Servicios", path: "/admin/servicios" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -257,6 +268,28 @@ function DashboardLayoutContent({
             </div>
           </div>
         )}
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="/admin">Admin</BreadcrumbLink>
+                </BreadcrumbItem>
+                {location !== "/admin" && (
+                  <>
+                    <BreadcrumbSeparator className="hidden md:block" />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>
+                        {activeMenuItem?.label || "Página"}
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                )}
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
         <main className="flex-1 p-4">{children}</main>
       </SidebarInset>
     </>

@@ -280,6 +280,83 @@ export const appRouter = router({
           return { success: true };
         }),
     }),
+
+    // Services management
+    services: router({
+      list: adminProcedure.query(async () => {
+        const { getAllServicesAdmin } = await import("./db");
+        return getAllServicesAdmin();
+      }),
+      create: adminProcedure
+        .input((val: unknown) => {
+          if (typeof val === "object" && val !== null) {
+            return val as {
+              name: string;
+              description?: string;
+              price: number;
+              duration: number;
+              category?: string;
+              imageUrl?: string;
+            };
+          }
+          throw new Error("Invalid input");
+        })
+        .mutation(async ({ input }) => {
+          const db = await import("./db").then((m) => m.getDb());
+          if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+          const { services } = await import("../drizzle/schema");
+          await db.insert(services).values({
+            name: input.name,
+            description: input.description,
+            price: input.price,
+            duration: input.duration,
+            category: input.category,
+            imageUrl: input.imageUrl,
+            isActive: 1,
+          });
+          return { success: true };
+        }),
+      update: adminProcedure
+        .input((val: unknown) => {
+          if (typeof val === "object" && val !== null && "id" in val) {
+            return val as {
+              id: number;
+              name?: string;
+              description?: string;
+              price?: number;
+              duration?: number;
+              category?: string;
+              imageUrl?: string;
+              isActive?: number;
+            };
+          }
+          throw new Error("Invalid input");
+        })
+        .mutation(async ({ input }) => {
+          const db = await import("./db").then((m) => m.getDb());
+          if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+          const { services } = await import("../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+          const { id, ...updateData } = input;
+          await db.update(services).set(updateData).where(eq(services.id, id));
+          return { success: true };
+        }),
+      delete: adminProcedure
+        .input((val: unknown) => {
+          if (typeof val === "object" && val !== null && "id" in val) {
+            return val as { id: number };
+          }
+          throw new Error("Invalid input");
+        })
+        .mutation(async ({ input }) => {
+          const db = await import("./db").then((m) => m.getDb());
+          if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+          const { services } = await import("../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+          await db.update(services).set({ isActive: 0 }).where(eq(services.id, input.id));
+          return { success: true };
+        }),
+    }),
   }),
 
   // Public order creation
@@ -344,6 +421,24 @@ export const appRouter = router({
         }
 
         return { success: true, orderNumber, orderId };
+      }),
+  }),
+
+  services: router({
+    list: publicProcedure.query(async () => {
+      const { getAllServices } = await import("./db");
+      return getAllServices();
+    }),
+    getById: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === "object" && val !== null && "id" in val) {
+          return val as { id: number };
+        }
+        throw new Error("Invalid input");
+      })
+      .query(async ({ input }) => {
+        const { getServiceById } = await import("./db");
+        return getServiceById(input.id);
       }),
   }),
 });

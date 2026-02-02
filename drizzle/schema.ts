@@ -102,3 +102,22 @@ export const orderItems = mysqlTable("orderItems", {
 
 export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = typeof orderItems.$inferInsert;
+
+/**
+ * Servicios ofrecidos
+ */
+export const services = mysqlTable("services", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  price: int("price").notNull(), // Precio en colones
+  duration: int("duration").notNull(), // Duración en minutos
+  imageUrl: varchar("imageUrl", { length: 500 }),
+  category: varchar("category", { length: 100 }),
+  isActive: int("isActive").default(1).notNull(), // 1 = activo, 0 = inactivo
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Service = typeof services.$inferSelect;
+export type InsertService = typeof services.$inferInsert;

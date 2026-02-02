@@ -19,6 +19,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProductos from "./pages/admin/AdminProductos";
 import AdminBlog from "./pages/admin/AdminBlog";
 import AdminOrdenes from "./pages/admin/AdminOrdenes";
+import AdminServices from "./pages/admin/AdminServices";
 import Checkout from "./pages/Checkout";
 
 import Login from "./pages/Login";
@@ -64,6 +65,9 @@ function Router() {
           </Route>
           <Route path="/admin/ordenes">
             {user?.role === "admin" ? <AdminOrdenes /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/admin/servicios">
+            {user?.role === "admin" ? <AdminServices /> : <Redirect to="/login" />}
           </Route>
 
           <Route path={"/404"} component={NotFound} />

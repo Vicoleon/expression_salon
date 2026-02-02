@@ -244,3 +244,38 @@ export async function getOrderItems(orderId: number) {
 
   return db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
 }
+
+// Service queries
+export async function getAllServices() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const { services } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+
+  return db.select().from(services).where(eq(services.isActive, 1));
+}
+
+export async function getAllServicesAdmin() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const { services } = await import("../drizzle/schema");
+  const { desc } = await import("drizzle-orm");
+
+  return db.select().from(services).orderBy(desc(services.createdAt));
+}
+
+export async function getServiceById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const { services } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+
+  const result = await db.select().from(services)
+    .where(eq(services.id, id))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}

@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, Redirect } from "wouter";
-import { Package, FileText, ShoppingCart, BarChart } from "lucide-react";
+import { Package, FileText, ShoppingCart, BarChart, Scissors } from "lucide-react";
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth();
@@ -40,6 +40,13 @@ export default function AdminDashboard() {
       icon: ShoppingCart,
       href: "/admin/ordenes",
       color: "text-purple-600",
+    },
+    {
+      title: "Servicios",
+      description: "Gestionar servicios ofrecidos",
+      icon: Scissors,
+      href: "/admin/servicios",
+      color: "text-pink-600",
     },
   ];
 
