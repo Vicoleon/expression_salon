@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
-import { createPool } from "mysql2/promise";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -12,19 +12,23 @@ export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       const connectionString = process.env.DATABASE_URL;
-      const isTiDB = connectionString.includes("tidbcloud");
-
-      const connectionParams = {
-        uri: connectionString.split('?')[0],
-        ssl: isTiDB ? { minVersion: "TLSv1.2", rejectUnauthorized: true } : undefined,
-      };
-
-      const pool = createPool(connectionParams);
-      _db = drizzle(pool, { mode: "default" });
+      console.log("[Database] Attempting to connect to:", connectionString.replace(/:[^:@]+@/, ':****@'));
+      
+      // Create postgres client
+      const client = postgres(connectionString, {
+        ssl: 'require',
+        max: 10,
+      });
+      
+      _db = drizzle(client, { logger: true });
+      console.log("[Database] Connection established successfully");
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.error("[Database] Failed to connect:", error);
       _db = null;
     }
+  }
+  if (!_db) {
+    console.warn("[Database] No database connection available");
   }
   return _db;
 }
@@ -79,7 +83,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    // PostgreSQL upsert using onConflictDoUpdate
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {
@@ -107,9 +113,14 @@ export async function getUserByUsername(username: string) {
     return undefined;
   }
 
-  const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
-
-  return result.length > 0 ? result[0] : undefined;
+  try {
+    const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    console.log("[Database] getUserByUsername result:", result.length > 0 ? "User found" : "User not found");
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error) {
+    console.error("[Database] Error in getUserByUsername:", error);
+    throw error;
+  }
 }
 
 // Product queries
