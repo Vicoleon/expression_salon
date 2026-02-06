@@ -1,6 +1,7 @@
+
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -12,15 +13,21 @@ export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       const connectionString = process.env.DATABASE_URL;
-      console.log("[Database] Attempting to connect to:", connectionString.replace(/:[^:@]+@/, ':****@'));
-      
+      console.log("[Database] Attempting to connect to database");
+
+      const params = new URL(connectionString).searchParams;
+      const sslMode = params.get("sslmode");
+
+      // Force SSL if not present, common for Supabase
+      const hasSSL = sslMode === "require" || sslMode === "no-verify";
+
       // Create postgres client
-      const client = postgres(connectionString, {
-        ssl: 'require',
-        max: 10,
+      const pool = new Pool({
+        connectionString,
+        ssl: hasSSL ? undefined : { rejectUnauthorized: false }
       });
-      
-      _db = drizzle(client, { logger: true });
+
+      _db = drizzle(pool, { logger: true });
       console.log("[Database] Connection established successfully");
     } catch (error) {
       console.error("[Database] Failed to connect:", error);

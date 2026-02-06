@@ -1,48 +1,40 @@
 import "dotenv/config";
 import { getDb } from "../server/db";
 import { users } from "../drizzle/schema";
-import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
+import bcrypt from "bcrypt";
 
 async function seedAdmin() {
     const db = await getDb();
     if (!db) {
-        console.error("Database connection failed");
+        console.error("Failed to connect to DB");
         process.exit(1);
     }
 
     const username = "admin";
-    const password = "password123"; // Change this in production!
+    const password = "admin123";
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    console.log(`Seeding admin user: ${username}`);
+    // Check if admin exists
+    const existing = await db.select().from(users).where(eq(users.username, username)).limit(1);
 
-    const existingUser = await db.select().from(users).where(eq(users.username, username)).limit(1);
-
-    if (existingUser.length > 0) {
-        console.log("Admin user already exists, updating password...");
-        await db.update(users).set({
-            password: hashedPassword,
-            role: "admin",
-        }).where(eq(users.username, username));
+    if (existing.length > 0) {
+        console.log("Admin user already exists");
     } else {
-        console.log("Creating new admin user...");
+        console.log("Creating admin user...");
         await db.insert(users).values({
-            openId: `local-${nanoid()}`,
             username,
             password: hashedPassword,
+            name: "Admin User",
             role: "admin",
-            name: "Administrator",
-            loginMethod: "local",
+            openId: "local-admin",
+            email: "admin@example.com",
+            loginMethod: "local"
         });
+        console.log("Admin user created");
     }
 
-    console.log("Admin user seeded successfully.");
     process.exit(0);
 }
 
-seedAdmin().catch((err) => {
-    console.error("Error seeding admin:", err);
-    process.exit(1);
-});
+seedAdmin().catch(console.error);

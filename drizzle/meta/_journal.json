@@ -1,33 +1,12 @@
 {
   "version": "7",
-  "dialect": "mysql",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1764376007017,
-      "tag": "0000_chemical_mattie_franklin",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1764376071870,
-      "tag": "0001_daffy_solo",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1764381771089,
-      "tag": "0002_careless_shotgun",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1764555584299,
-      "tag": "0003_daily_mikhail_rasputin",
+      "version": "7",
+      "when": 1770391724459,
+      "tag": "0000_perpetual_wither",
       "breakpoints": true
     }
   ]

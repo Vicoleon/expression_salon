@@ -10,13 +10,9 @@ const url = new URL(connectionString);
 export default defineConfig({
   schema: "./drizzle/schema.ts",
   out: "./drizzle",
-  dialect: "mysql",
+  dialect: "postgresql",
   dbCredentials: {
-    host: url.hostname,
-    port: parseInt(url.port || "3306"),
-    user: url.username,
-    password: url.password,
-    database: url.pathname.slice(1), // Remove leading slash
-    ssl: connectionString.includes("tidbcloud") ? { minVersion: "TLSv1.2", rejectUnauthorized: true } : undefined,
+    url: connectionString,
+    ssl: { rejectUnauthorized: false },
   },
 });
